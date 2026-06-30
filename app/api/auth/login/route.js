@@ -14,7 +14,7 @@ export async function POST(request) {
             );
         }
 
-        if (!checkPassword(password)) {
+        if (!(await checkPassword(password))) {
             return NextResponse.json(
                 { error: 'Senha incorreta' },
                 { status: 401 }
