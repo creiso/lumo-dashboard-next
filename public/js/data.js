@@ -260,18 +260,21 @@ const LumoData = {
        CALCULATED FIELDS
        ======================== */
 
-    calculateFields(account) {
-        const leadsTotal = (account.leadsFB || 0) + (account.leadsGG || 0);
+    calculateFields(account, dailyData) {
         const meta = account.meta || 0;
-        const adSpendFB = account.adSpendFB || 0;
-        const adSpendGG = account.adSpendGG || 0;
-        const taxesFB = account.taxesFB || 0;
-        const taxesGG = account.taxesGG || 0;
         const verbaFB = account.verbaFB || 0;
         const verbaGG = account.verbaGG || 0;
-
-        const investmentTotal = adSpendFB + adSpendGG + taxesFB + taxesGG;
         const verbaTotal = verbaFB + verbaGG;
+
+        let leadsTotal = (account.leadsFB || 0) + (account.leadsGG || 0);
+        let investmentTotal = (account.adSpendFB || 0) + (account.adSpendGG || 0) + (account.taxesFB || 0) + (account.taxesGG || 0);
+        let taxesTotal = (account.taxesFB || 0) + (account.taxesGG || 0);
+
+        if (dailyData) {
+            leadsTotal = dailyData.totalLeads;
+            investmentTotal = dailyData.totalInvestimento + dailyData.totalImposto;
+            taxesTotal = dailyData.totalImposto;
+        }
 
         const now = new Date();
         const daysInMonth = this.getDaysInMonth();
@@ -279,8 +282,8 @@ const LumoData = {
         const projecaoMeta = meta > 0 ? Math.round((currentDay / daysInMonth) * meta) : 0;
         const percentMeta = meta > 0 ? (leadsTotal / meta) * 100 : 0;
         const cpl = leadsTotal > 0 ? investmentTotal / leadsTotal : 0;
-        const verbaRestanteFB = verbaFB - adSpendFB - taxesFB;
-        const verbaRestanteGG = verbaGG - adSpendGG - taxesGG;
+        const verbaRestanteFB = verbaFB - (account.adSpendFB || 0) - (account.taxesFB || 0);
+        const verbaRestanteGG = verbaGG - (account.adSpendGG || 0) - (account.taxesGG || 0);
         const verbaRestanteTotal = verbaTotal - investmentTotal;
         const projecaoPercent = meta > 0 ? (projecaoMeta / meta) * 100 : 0;
         const verbaRestantePercent = verbaTotal > 0 ? (verbaRestanteTotal / verbaTotal) * 100 : 0;
@@ -288,14 +291,28 @@ const LumoData = {
         return {
             ...account, leadsTotal, investmentTotal, verbaTotal, projecaoMeta,
             percentMeta, cpl, verbaRestanteFB, verbaRestanteGG, verbaRestanteTotal,
-            projecaoPercent, verbaRestantePercent,
-            taxesTotal: taxesFB + taxesGG,
+            projecaoPercent, verbaRestantePercent, taxesTotal,
             verbaExtraTotal: (account.verbaExtraFB || 0) + (account.verbaExtraGG || 0)
         };
     },
 
-    calculateTotals(accounts) {
-        const calculatedAccounts = accounts.map(a => this.calculateFields(a));
+    calculateTotals(accounts, startDate, endDate) {
+        const allEntries = this.getAllDailyEntries();
+        const filteredEntries = allEntries.filter(e => {
+            if (startDate && e.date < startDate) return false;
+            if (endDate && e.date > endDate) return false;
+            return true;
+        });
+
+        const agg = {};
+        filteredEntries.forEach(e => {
+            if (!agg[e.accountId]) agg[e.accountId] = { totalInvestimento: 0, totalLeads: 0, totalImposto: 0 };
+            agg[e.accountId].totalInvestimento += parseFloat(e.investimento) || 0;
+            agg[e.accountId].totalLeads += parseInt(e.leads) || 0;
+            agg[e.accountId].totalImposto += parseFloat(e.imposto) || 0;
+        });
+
+        const calculatedAccounts = accounts.map(a => this.calculateFields(a, agg[a.id]));
         const totals = {
             name: 'TOTAL', leadsFB: 0, leadsGG: 0, leadsTotal: 0, meta: 0,
             adSpendFB: 0, adSpendGG: 0, investmentTotal: 0,

@@ -45,7 +45,7 @@
 
     function renderDashboard() {
         const data = LumoData.getData();
-        const { accounts, totals } = LumoData.calculateTotals(data.accounts);
+        const { accounts, totals } = LumoData.calculateTotals(data.accounts, filterStartDate, filterEndDate);
         renderKPIs(totals);
         renderPerformanceTable(accounts, totals);
         renderVerbasTable(accounts, totals);
@@ -61,7 +61,7 @@
     /* KPIs */
     function renderKPIs(totals) {
         animateValue('kpi-leads', totals.leadsTotal);
-        document.getElementById('kpi-leads-sub').textContent = `FB: ${LumoData.formatNumber(totals.leadsFB)} · GG: ${LumoData.formatNumber(totals.leadsGG)}`;
+        document.getElementById('kpi-leads-sub').textContent = `Agregado no período`;
         animateValue('kpi-meta', totals.meta);
         document.getElementById('kpi-meta-sub').textContent = `Projeção: ${LumoData.formatNumber(totals.projecaoMeta)}`;
         document.getElementById('kpi-percent').textContent = LumoData.formatPercent(totals.percentMeta);
@@ -98,30 +98,38 @@
     function perfRow(acc, isTotal) {
         const tr = document.createElement('tr');
         if (isTotal) tr.className = 'row-total';
-        const pc = acc.percentMeta >= 100 ? 'status-positive' : acc.percentMeta >= 70 ? 'status-warning' : 'status-negative';
-        tr.innerHTML = `<td>${acc.name}</td><td class="text-right">${LumoData.formatNumber(acc.leadsTotal)}</td><td class="text-right">${LumoData.formatNumber(acc.leadsFB)}</td><td class="text-right">${LumoData.formatNumber(acc.leadsGG)}</td><td class="text-right">${LumoData.formatNumber(acc.meta)}</td><td class="text-right">${LumoData.formatNumber(acc.projecaoMeta)}</td><td class="text-right ${pc}">${LumoData.formatPercent(acc.percentMeta)}</td><td class="text-right">${LumoData.formatCurrency(acc.cpl)}</td><td class="text-right">${LumoData.formatCurrency(acc.investmentTotal)}</td>`;
+        const pmClass = acc.percentMeta >= 100 ? 'status-positive' : acc.percentMeta >= 70 ? 'status-warning' : 'status-negative';
+        tr.innerHTML = `<td>${acc.name}</td>
+            <td class="text-center font-bold text-white">${LumoData.formatNumber(acc.leadsTotal)}</td>
+            <td class="text-center" style="opacity:0.4">-</td>
+            <td class="text-center" style="opacity:0.4">-</td>
+            <td class="text-center">${LumoData.formatNumber(acc.meta)}</td>
+            <td class="text-center">${LumoData.formatNumber(acc.projecaoMeta)}</td>
+            <td class="text-center ${pmClass}">${LumoData.formatPercent(acc.percentMeta)}</td>
+            <td class="text-right">${LumoData.formatCurrency(acc.cpl)}</td>
+            <td class="text-right">${LumoData.formatCurrency(acc.investmentTotal)}</td>`;
         return tr;
     }
 
     function renderVerbasTable(accounts, totals) {
         const tbody = document.getElementById('tbody-verbas');
         tbody.innerHTML = '';
-        accounts.forEach(a => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${a.name}</td><td class="text-right">${LumoData.formatCurrency(a.verbaFB)}</td><td class="text-right">${LumoData.formatCurrency(a.verbaGG)}</td><td class="text-right">${LumoData.formatCurrency(a.verbaTotal)}</td><td class="text-center"><span class="badge badge-info">${a.metodoPagamento||'—'}</span></td>`; tbody.appendChild(tr); });
-        const t = document.createElement('tr'); t.className = 'row-total'; t.innerHTML = `<td>TOTAL</td><td class="text-right">${LumoData.formatCurrency(totals.verbaFB)}</td><td class="text-right">${LumoData.formatCurrency(totals.verbaGG)}</td><td class="text-right">${LumoData.formatCurrency(totals.verbaTotal)}</td><td class="text-center">—</td>`; tbody.appendChild(t);
+        accounts.forEach(a => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${a.name}</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right">${LumoData.formatCurrency(a.investmentTotal)}</td><td class="text-right">${LumoData.formatCurrency(a.verbaTotal)}</td>`; tbody.appendChild(tr); });
+        const t = document.createElement('tr'); t.className = 'row-total'; t.innerHTML = `<td>TOTAL</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right">${LumoData.formatCurrency(totals.investmentTotal)}</td><td class="text-right">${LumoData.formatCurrency(totals.verbaTotal)}</td>`; tbody.appendChild(t);
     }
 
     function renderRestanteTable(accounts, totals) {
         const tbody = document.getElementById('tbody-restante');
         tbody.innerHTML = '';
-        accounts.forEach(a => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${a.name}</td><td class="text-right ${a.verbaRestanteFB<0?'status-negative':'status-positive'}">${LumoData.formatCurrency(a.verbaRestanteFB)}</td><td class="text-right ${a.verbaRestanteGG<0?'status-negative':'status-positive'}">${LumoData.formatCurrency(a.verbaRestanteGG)}</td><td class="text-right ${a.verbaRestanteTotal<0?'status-negative':'status-positive'}">${LumoData.formatCurrency(a.verbaRestanteTotal)}</td>`; tbody.appendChild(tr); });
-        const t = document.createElement('tr'); t.className = 'row-total'; t.innerHTML = `<td>TOTAL</td><td class="text-right ${totals.verbaRestanteFB<0?'status-negative':'status-positive'}">${LumoData.formatCurrency(totals.verbaRestanteFB)}</td><td class="text-right ${totals.verbaRestanteGG<0?'status-negative':'status-positive'}">${LumoData.formatCurrency(totals.verbaRestanteGG)}</td><td class="text-right ${totals.verbaRestanteTotal<0?'status-negative':'status-positive'}">${LumoData.formatCurrency(totals.verbaRestanteTotal)}</td>`; tbody.appendChild(t);
+        accounts.forEach(a => { const tr = document.createElement('tr'); const rCls = a.verbaRestanteTotal<0?'status-negative':'status-positive'; tr.innerHTML = `<td>${a.name}</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right font-bold ${rCls}">${LumoData.formatCurrency(a.verbaRestanteTotal)}</td>`; tbody.appendChild(tr); });
+        const t = document.createElement('tr'); t.className = 'row-total'; const tCls = totals.verbaRestanteTotal<0?'status-negative':'status-positive'; t.innerHTML = `<td>TOTAL</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right font-bold ${tCls}">${LumoData.formatCurrency(totals.verbaRestanteTotal)}</td>`; tbody.appendChild(t);
     }
 
     function renderTaxesTable(accounts, totals) {
         const tbody = document.getElementById('tbody-taxes');
         tbody.innerHTML = '';
-        accounts.forEach(a => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${a.name}</td><td class="text-right">${LumoData.formatCurrency(a.taxesFB)}</td><td class="text-center">${statusBadge(a.taxesEnviado)}</td><td class="text-center">${statusBadge(a.taxesPago)}</td>`; tbody.appendChild(tr); });
-        const t = document.createElement('tr'); t.className = 'row-total'; t.innerHTML = `<td>TOTAL</td><td class="text-right">${LumoData.formatCurrency(totals.taxesFB)}</td><td class="text-center">—</td><td class="text-center">—</td>`; tbody.appendChild(t);
+        accounts.forEach(a => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${a.name}</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right">${LumoData.formatCurrency(a.taxesTotal)}</td><td class="text-center">${statusBadge(a.taxesEnviado)}</td><td class="text-center">${statusBadge(a.taxesPago)}</td>`; tbody.appendChild(tr); });
+        const t = document.createElement('tr'); t.className = 'row-total'; t.innerHTML = `<td>TOTAL</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right" style="opacity:0.4">-</td><td class="text-right">${LumoData.formatCurrency(totals.taxesTotal)}</td><td></td><td></td>`; tbody.appendChild(t);
     }
 
     function renderExtraTable(accounts, totals) {
@@ -138,33 +146,117 @@
         const t = document.createElement('tr'); t.className = 'row-total'; const tpc = totals.projecaoPercent>=80?'status-positive':totals.projecaoPercent>=50?'status-warning':'status-negative'; const tvc = totals.verbaRestantePercent<0?'status-negative':'status-positive'; t.innerHTML = `<td>TOTAL</td><td class="text-right">${LumoData.formatNumber(totals.meta)}</td><td class="text-right">${LumoData.formatNumber(totals.projecaoMeta)}</td><td class="text-right ${tpc}">${LumoData.formatPercent(totals.projecaoPercent)}</td><td class="text-right ${tvc}">${LumoData.formatPercent(totals.verbaRestantePercent)}</td>`; tbody.appendChild(t);
     }
 
-    /* Alerts */
+    /* Alerts (Now Scatter Plot) */
     function renderAlerts() {
         const grid = document.getElementById('alerts-grid');
         const dateBadge = document.getElementById('alerts-date-badge');
-        const targetDate = filterEndDate || LumoData.getTodayISO();
-        const alerts = LumoData.getDailyComparison(targetDate);
-        dateBadge.textContent = `${LumoData.formatDateBR(targetDate)} vs dia anterior`;
-        grid.innerHTML = '';
-        if (alerts.length === 0) {
-            grid.innerHTML = `<div class="alert-empty">Nenhum dado comparativo disponível.<br><small style="color:var(--text-muted);">Adicione lançamentos diários no painel admin.</small></div>`;
+        
+        let targetStart = filterStartDate;
+        let targetEnd = filterEndDate;
+        if (!targetStart || !targetEnd) {
+            const now = new Date();
+            targetStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+            targetEnd = LumoData.formatDateISO(now);
+        }
+        dateBadge.textContent = `${LumoData.formatDateBR(targetStart)} até ${LumoData.formatDateBR(targetEnd)}`;
+        
+        grid.style.display = 'block';
+        grid.innerHTML = '<canvas id="chart-daily-scatter" style="width:100%; height:300px; display:block;"></canvas>';
+        
+        const canvas = document.getElementById('chart-daily-scatter');
+        const ctx = canvas.getContext('2d');
+        const rect = grid.getBoundingClientRect();
+        canvas.width = rect.width; 
+        canvas.height = 300;
+        
+        const allEntries = LumoData.getAllDailyEntries();
+        const filteredEntries = allEntries.filter(e => e.date >= targetStart && e.date <= targetEnd);
+        
+        if (filteredEntries.length === 0) {
+            ctx.fillStyle = '#666'; ctx.font = '14px Inter,sans-serif'; ctx.textAlign = 'center'; 
+            ctx.fillText('Nenhum lançamento no período selecionado.', canvas.width/2, canvas.height/2); 
             return;
         }
-        alerts.forEach((alert, i) => {
-            const card = document.createElement('div');
-            let cls, icon, verb, valText;
-            if (alert.type === 'investimento') {
-                if (alert.direction === 'up') { cls = 'alert-up'; icon = '🔴'; verb = 'investiu'; valText = `${LumoData.formatCurrency(alert.diff)} a mais`; }
-                else { cls = 'alert-positive'; icon = '🟢'; verb = 'investiu'; valText = `${LumoData.formatCurrency(alert.diff)} a menos`; }
-            } else {
-                if (alert.direction === 'up') { cls = 'alert-positive'; icon = '🟢'; verb = 'gerou'; valText = `${alert.diff} lead${alert.diff!==1?'s':''} a mais`; }
-                else { cls = 'alert-down'; icon = '🟡'; verb = 'gerou'; valText = `${alert.diff} lead${alert.diff!==1?'s':''} a menos`; }
-            }
-            card.className = `alert-card ${cls}`;
-            card.style.animationDelay = `${i * 0.08}s`;
-            card.innerHTML = `<div class="alert-icon">${icon}</div><div class="alert-text"><span class="alert-account">${alert.accountName}:</span> ${verb} <span class="alert-value">${valText}</span> que o dia anterior</div>`;
-            grid.appendChild(card);
+
+        const dateAgg = {};
+        filteredEntries.forEach(e => {
+            if (!dateAgg[e.date]) dateAgg[e.date] = { leads: 0, invest: 0 };
+            dateAgg[e.date].leads += parseInt(e.leads) || 0;
+            dateAgg[e.date].invest += (parseFloat(e.investimento) || 0) + (parseFloat(e.imposto) || 0);
         });
+
+        const dates = Object.keys(dateAgg).sort();
+        
+        const pad = { top: 30, right: 30, bottom: 40, left: 70 };
+        const w = canvas.width, h = canvas.height;
+        const cW = w - pad.left - pad.right;
+        const cH = h - pad.top - pad.bottom;
+        
+        ctx.clearRect(0, 0, w, h);
+        
+        const maxInvest = Math.max(...dates.map(d => dateAgg[d].invest), 10);
+        const maxLeads = Math.max(...dates.map(d => dateAgg[d].leads), 5);
+        
+        // Draw grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(let i=0; i<=4; i++) {
+            const y = pad.top + (i/4)*cH;
+            ctx.moveTo(pad.left, y);
+            ctx.lineTo(w - pad.right, y);
+        }
+        ctx.stroke();
+
+        const xStep = dates.length > 1 ? cW / (dates.length - 1) : cW / 2;
+        
+        // Draw Lines & Points
+        const drawSeries = (key, color, maxVal) => {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            dates.forEach((d, i) => {
+                const x = pad.left + (dates.length > 1 ? i * xStep : xStep);
+                const y = pad.top + cH - (dateAgg[d][key] / maxVal) * cH;
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+            
+            dates.forEach((d, i) => {
+                const x = pad.left + (dates.length > 1 ? i * xStep : xStep);
+                const y = pad.top + cH - (dateAgg[d][key] / maxVal) * cH;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI*2);
+                ctx.fillStyle = '#111';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = color;
+                ctx.stroke();
+                
+                // Tooltip text
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = '10px Inter,sans-serif';
+                ctx.textAlign = 'center';
+                const txt = key === 'invest' ? LumoData.formatCurrency(dateAgg[d][key]) : dateAgg[d][key];
+                ctx.fillText(txt, x, y - 10);
+            });
+        };
+
+        drawSeries('invest', '#4CAF50', maxInvest); // Green for Investment
+        drawSeries('leads', '#2196F3', maxLeads); // Blue for Leads
+
+        // Draw X axis dates
+        ctx.fillStyle = '#666'; ctx.font = '10px Inter,sans-serif'; ctx.textAlign = 'center';
+        dates.forEach((d, i) => {
+            const x = pad.left + (dates.length > 1 ? i * xStep : xStep);
+            const dateStr = d.split('-').slice(1).reverse().join('/');
+            ctx.fillText(dateStr, x, h - 15);
+        });
+
+        // Legend
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#4CAF50'; ctx.fillRect(pad.left, 5, 10, 10); ctx.fillStyle = '#a0a0a0'; ctx.fillText('Investimento Diário', pad.left+15, 14);
+        ctx.fillStyle = '#2196F3'; ctx.fillRect(pad.left + 150, 5, 10, 10); ctx.fillStyle = '#a0a0a0'; ctx.fillText('Leads Diários', pad.left+165, 14);
     }
 
     /* Charts */
