@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Relatório de Marketing - LUMO Dashboard">
+    <title>Relatório - LUMO Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/assets/logo.png" type="image/png">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <a href="/index.html" class="header-brand">
+                <div class="header-logo">L</div>
+                <div>
+                    <div class="header-title">LUMO</div>
+                    <div class="header-subtitle">Relatório Marketing</div>
+                </div>
+            </a>
+            <div class="nav-actions client-header-meta">
+                <div class="client-date" id="current-date">
+                    📅 <span id="date-text"></span>
+                </div>
+                <button class="btn btn-export" id="btn-export-png">📷 Exportar PNG</button>
+                <button class="btn btn-export" id="btn-export-pdf">📄 Exportar PDF</button>
+                <a href="index.html" class="btn btn-ghost">← Voltar</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dashboard Content (exportable area) -->
+    <div class="container">
+        <div class="main-content" id="dashboard-content">
+            <!-- Export Header (shown in export) -->
+            <div class="export-header">
+                <div>
+                    <div class="export-header-title">LUMO — Relatório de Marketing</div>
+                    <div class="export-header-date" id="export-date"></div>
+                </div>
+                <div class="header-logo" style="width:48px;height:48px;font-size:20px;">L</div>
+            </div>
+
+            <!-- Date Filter -->
+            <div class="date-filter" id="date-filter-bar">
+                <span class="date-filter-label">📅 Filtrar Período:</span>
+                <input type="date" id="filter-start" class="date-input" title="Data início">
+                <span class="date-filter-sep">até</span>
+                <input type="date" id="filter-end" class="date-input" title="Data fim">
+                <button class="btn btn-primary btn-sm" id="btn-filter-apply">Filtrar</button>
+                <button class="btn btn-ghost btn-sm" id="btn-filter-clear">Limpar</button>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid" id="kpi-grid">
+                <div class="kpi-card animate-in">
+                    <div class="kpi-icon">📈</div>
+                    <div class="kpi-label">Total de Leads</div>
+                    <div class="kpi-value" id="kpi-leads">—</div>
+                    <div class="kpi-change neutral" id="kpi-leads-badge">
+                        <span id="kpi-leads-sub">—</span>
+                    </div>
+                </div>
+                <div class="kpi-card animate-in animate-in-delay-1">
+                    <div class="kpi-icon">🎯</div>
+                    <div class="kpi-label">Meta Total</div>
+                    <div class="kpi-value" id="kpi-meta">—</div>
+                    <div class="kpi-change neutral" id="kpi-meta-badge">
+                        <span id="kpi-meta-sub">Projeção: —</span>
+                    </div>
+                </div>
+                <div class="kpi-card animate-in animate-in-delay-2">
+                    <div class="kpi-icon">✅</div>
+                    <div class="kpi-label">% da Meta</div>
+                    <div class="kpi-value" id="kpi-percent">—</div>
+                    <div class="kpi-change" id="kpi-percent-badge">
+                        <span id="kpi-percent-sub">—</span>
+                    </div>
+                </div>
+                <div class="kpi-card animate-in animate-in-delay-3">
+                    <div class="kpi-icon">💰</div>
+                    <div class="kpi-label">CPL Médio</div>
+                    <div class="kpi-value" id="kpi-cpl">—</div>
+                    <div class="kpi-change neutral" id="kpi-cpl-badge">
+                        <span id="kpi-cpl-sub">custo por lead</span>
+                    </div>
+                </div>
+                <div class="kpi-card animate-in animate-in-delay-4">
+                    <div class="kpi-icon">💵</div>
+                    <div class="kpi-label">Investimento Total</div>
+                    <div class="kpi-value" id="kpi-invest">—</div>
+                    <div class="kpi-change" id="kpi-invest-badge">
+                        <span id="kpi-invest-sub">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Table -->
+            <div class="card mb-3 animate-in">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="icon">📊</div>
+                        Performance de Leads
+                    </div>
+                </div>
+                <div class="table-wrapper" style="border:none; margin:0;">
+                    <table class="data-table" id="table-performance">
+                        <thead>
+                            <tr>
+                                <th>Conta</th>
+                                <th class="text-right">Total</th>
+                                <th class="text-right">Leads FB</th>
+                                <th class="text-right">Leads GG</th>
+                                <th class="text-right">Meta</th>
+                                <th class="text-right">Projeção</th>
+                                <th class="text-right">% Meta</th>
+                                <th class="text-right">CPL</th>
+                                <th class="text-right">Investimento</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-performance"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid-2 mb-3">
+                <!-- Leads vs Meta Chart -->
+                <div class="chart-container animate-in animate-in-delay-1">
+                    <div class="chart-title">📊 Leads vs Meta por Conta</div>
+                    <canvas id="chart-leads" class="chart-canvas"></canvas>
+                </div>
+
+                <!-- Investment Distribution Chart -->
+                <div class="chart-container animate-in animate-in-delay-2">
+                    <div class="chart-title">💰 Distribuição de Investimento</div>
+                    <canvas id="chart-invest" class="chart-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Verbas Row -->
+            <div class="grid-2 mb-3">
+                <!-- Verbas Mensais -->
+                <div class="card animate-in animate-in-delay-1">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="icon">💵</div>
+                            Verbas Mensais
+                        </div>
+                    </div>
+                    <div class="table-wrapper" style="border:none; margin:0;">
+                        <table class="data-table" id="table-verbas">
+                            <thead>
+                                <tr>
+                                    <th>Conta</th>
+                                    <th class="text-right">Facebook</th>
+                                    <th class="text-right">Google</th>
+                                    <th class="text-right">Total</th>
+                                    <th class="text-center">Pagamento</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-verbas"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Verba Restante -->
+                <div class="card animate-in animate-in-delay-2">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="icon">📉</div>
+                            Verba Restante
+                        </div>
+                    </div>
+                    <div class="table-wrapper" style="border:none; margin:0;">
+                        <table class="data-table" id="table-restante">
+                            <thead>
+                                <tr>
+                                    <th>Conta</th>
+                                    <th class="text-right">Facebook</th>
+                                    <th class="text-right">Google</th>
+                                    <th class="text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-restante"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Impostos & Verba Extra Row -->
+            <div class="grid-2 mb-3">
+                <!-- PIS/COFINS/ISS -->
+                <div class="card animate-in animate-in-delay-1">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="icon">🧾</div>
+                            PIS / COFINS / ISS
+                        </div>
+                    </div>
+                    <div class="table-wrapper" style="border:none; margin:0;">
+                        <table class="data-table" id="table-taxes">
+                            <thead>
+                                <tr>
+                                    <th>Conta</th>
+                                    <th class="text-right">Facebook</th>
+                                    <th class="text-center">Enviado</th>
+                                    <th class="text-center">Pago</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-taxes"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Verba Extra -->
+                <div class="card animate-in animate-in-delay-2">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="icon">🎁</div>
+                            Verba Extra
+                        </div>
+                    </div>
+                    <div class="table-wrapper" style="border:none; margin:0;">
+                        <table class="data-table" id="table-extra">
+                            <thead>
+                                <tr>
+                                    <th>Conta</th>
+                                    <th class="text-right">Facebook</th>
+                                    <th class="text-right">Google</th>
+                                    <th class="text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-extra"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics & Projections -->
+            <div class="card mb-3 animate-in">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="icon">📐</div>
+                        Estatísticas e Projeções
+                    </div>
+                </div>
+                <div class="table-wrapper" style="border:none; margin:0;">
+                    <table class="data-table" id="table-stats">
+                        <thead>
+                            <tr>
+                                <th>Conta</th>
+                                <th class="text-right">Meta</th>
+                                <th class="text-right">Projeção Meta</th>
+                                <th class="text-right">Projeção %</th>
+                                <th class="text-right">Verba Restante %</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-stats"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Daily Comparison Alerts -->
+            <div class="card mb-3 animate-in alerts-section" id="alerts-section">
+                <div class="card-header">
+                    <div class="card-title">
+                        <div class="icon">⚡</div>
+                        Comparativo Diário
+                    </div>
+                    <span class="card-badge" id="alerts-date-badge" style="background:var(--bg-input); color:var(--text-secondary);"></span>
+                </div>
+                <div class="alerts-grid" id="alerts-grid">
+                    <!-- Alerts rendered by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="global-toast" class="toast"></div>
+
+    <script src="/js/data.js"></script>
+    <script src="/js/export.js"></script>
+    <script src="/js/client.js"></script>
+</body>
+</html>

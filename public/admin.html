@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Painel Administrativo - LUMO Dashboard">
+    <title>Admin - LUMO Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/assets/logo.png" type="image/png">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <a href="/index.html" class="header-brand">
+                <div class="header-logo">L</div>
+                <div>
+                    <div class="header-title">LUMO</div>
+                    <div class="header-subtitle">Painel Admin</div>
+                </div>
+            </a>
+            <div class="nav-actions">
+                <button class="btn btn-ghost" id="btn-settings" title="Configurações">⚙️ Configurações</button>
+                <button class="btn btn-secondary" id="btn-logout">🚪 Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Admin View Tabs -->
+            <div class="tabs" id="admin-tabs">
+                <button class="tab-btn active" data-tab="tab-accounts" id="tab-btn-accounts">🏢 Contas</button>
+                <button class="tab-btn" data-tab="tab-daily" id="tab-btn-daily">📋 Lançamentos Diários</button>
+            </div>
+
+            <!-- ===== TAB: ACCOUNTS ===== -->
+            <div class="tab-content active" id="tab-accounts">
+                <div class="admin-layout">
+                    <!-- Sidebar -->
+                    <aside class="sidebar">
+                        <div class="sidebar-card">
+                            <div class="sidebar-title">Contas</div>
+                            <div id="sidebar-accounts"></div>
+                            <div style="padding: 8px;">
+                                <button class="btn btn-primary btn-sm w-full" id="btn-add-account">＋ Nova Conta</button>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-card mt-3">
+                            <div class="sidebar-title">Ações</div>
+                            <div style="padding: 8px; display:flex; flex-direction:column; gap:8px;">
+                                <button class="btn btn-success btn-sm w-full" id="btn-save-all">💾 Salvar Tudo</button>
+                                <button class="btn btn-danger btn-sm w-full" id="btn-reset-data">🔄 Redefinir Dados</button>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Editor Area -->
+                    <main id="editor-area">
+                        <div class="empty-state" id="empty-state">
+                            <div class="empty-state-icon">📋</div>
+                            <div class="empty-state-title">Selecione uma conta</div>
+                            <div class="empty-state-desc">Clique em uma conta na barra lateral para editar seus dados</div>
+                        </div>
+
+                        <div id="account-editor" class="hidden">
+                            <!-- Account Name -->
+                            <div class="flex-between mb-3">
+                                <h2 class="section-title" id="editor-title">
+                                    <span class="icon">🏢</span>
+                                    <span id="editor-account-name">Conta</span>
+                                </h2>
+                                <button class="btn btn-danger btn-sm" id="btn-delete-account">🗑️ Excluir Conta</button>
+                            </div>
+
+                            <!-- Account Name Input -->
+                            <div class="account-form-section animate-in">
+                                <div class="form-section-title"><span class="icon">✏️</span> Identificação</div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-name">Nome da Conta</label>
+                                        <input type="text" id="field-name" class="input-field" placeholder="Nome da conta">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-metodo">Método de Pagamento</label>
+                                        <select id="field-metodo" class="select-field">
+                                            <option value="Cartão">Cartão</option>
+                                            <option value="Boleto">Boleto</option>
+                                            <option value="PIX">PIX</option>
+                                            <option value="Transferência">Transferência</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Leads & Meta -->
+                            <div class="account-form-section animate-in animate-in-delay-1">
+                                <div class="form-section-title"><span class="icon">📈</span> Performance de Leads</div>
+                                <div class="form-row form-row-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-leadsFB">Leads Facebook</label>
+                                        <input type="number" id="field-leadsFB" class="input-field" placeholder="0" min="0" step="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-leadsGG">Leads Google</label>
+                                        <input type="number" id="field-leadsGG" class="input-field" placeholder="0" min="0" step="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-meta">Meta Mensal</label>
+                                        <input type="number" id="field-meta" class="input-field" placeholder="0" min="0" step="1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Total de Leads</label>
+                                        <input type="text" id="calc-leadsTotal" class="input-field" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Investimento / Ad Spend -->
+                            <div class="account-form-section animate-in animate-in-delay-2">
+                                <div class="form-section-title"><span class="icon">💰</span> Investimento (Ad Spend)</div>
+                                <div class="form-row form-row-3">
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-adSpendFB">Gasto Facebook</label>
+                                        <div class="input-prefix">
+                                            <input type="number" id="field-adSpendFB" class="input-field input-currency" placeholder="0,00" min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-adSpendGG">Gasto Google</label>
+                                        <div class="input-prefix">
+                                            <input type="number" id="field-adSpendGG" class="input-field input-currency" placeholder="0,00" min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Total Investido</label>
+                                        <div class="input-prefix">
+                                            <input type="text" id="calc-investTotal" class="input-field input-currency" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Impostos PIS/COFINS/ISS -->
+                            <div class="account-form-section animate-in animate-in-delay-3">
+                                <div class="form-section-title"><span class="icon">🧾</span> PIS / COFINS / ISS (13,8% — auto)</div>
+                                <div class="form-row form-row-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-taxesFB">Impostos Facebook</label>
+                                        <div class="input-prefix">
+                                            <input type="text" id="field-taxesFB" class="input-field input-currency" placeholder="auto" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-taxesGG">Impostos Google</label>
+                                        <div class="input-prefix">
+                                            <input type="text" id="field-taxesGG" class="input-field input-currency" placeholder="auto" disabled>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-taxesEnviado">Enviado</label>
+                                        <select id="field-taxesEnviado" class="select-field">
+                                            <option value="">—</option>
+                                            <option value="Sim">Sim</option>
+                                            <option value="Não">Não</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-taxesPago">Pago</label>
+                                        <select id="field-taxesPago" class="select-field">
+                                            <option value="">—</option>
+                                            <option value="Sim">Sim</option>
+                                            <option value="Não">Não</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Verbas -->
+                            <div class="account-form-section animate-in animate-in-delay-4">
+                                <div class="form-section-title"><span class="icon">💵</span> Verbas Mensais</div>
+                                <div class="form-row form-row-3">
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-verbaFB">Verba Facebook</label>
+                                        <div class="input-prefix">
+                                            <input type="number" id="field-verbaFB" class="input-field input-currency" placeholder="0,00" min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-verbaGG">Verba Google</label>
+                                        <div class="input-prefix">
+                                            <input type="number" id="field-verbaGG" class="input-field input-currency" placeholder="0,00" min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Verba Restante</label>
+                                        <div class="input-prefix">
+                                            <input type="text" id="calc-verbaRestante" class="input-field input-currency" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Verba Extra -->
+                            <div class="account-form-section animate-in animate-in-delay-4">
+                                <div class="form-section-title"><span class="icon">🎁</span> Verba Extra</div>
+                                <div class="form-row form-row-3">
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-verbaExtraFB">Extra Facebook</label>
+                                        <div class="input-prefix">
+                                            <input type="number" id="field-verbaExtraFB" class="input-field input-currency" placeholder="0,00" min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="field-verbaExtraGG">Extra Google</label>
+                                        <div class="input-prefix">
+                                            <input type="number" id="field-verbaExtraGG" class="input-field input-currency" placeholder="0,00" min="0" step="0.01">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Total Extra</label>
+                                        <div class="input-prefix">
+                                            <input type="text" id="calc-verbaExtraTotal" class="input-field input-currency" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Calculated Summary -->
+                            <div class="account-form-section animate-in animate-in-delay-4" style="background: var(--gradient-card);">
+                                <div class="form-section-title"><span class="icon">📊</span> Resumo Calculado</div>
+                                <div class="form-row form-row-4">
+                                    <div class="form-group">
+                                        <label class="form-label">% da Meta</label>
+                                        <input type="text" id="calc-percentMeta" class="input-field" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">CPL</label>
+                                        <input type="text" id="calc-cpl" class="input-field" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Projeção Meta</label>
+                                        <input type="text" id="calc-projecao" class="input-field" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Custo Total (c/ Imposto)</label>
+                                        <input type="text" id="calc-totalWithTaxes" class="input-field" disabled>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button class="btn btn-secondary" id="btn-discard">↩️ Descartar</button>
+                                <button class="btn btn-primary" id="btn-save-account">💾 Salvar Conta</button>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            </div>
+
+            <!-- ===== TAB: DAILY ENTRIES ===== -->
+            <div class="tab-content" id="tab-daily">
+                <div class="daily-section">
+                    <!-- Month Selector -->
+                    <div class="month-selector">
+                        <label for="daily-month">📅 Mês de Referência:</label>
+                        <select id="daily-month" class="select-field"></select>
+                    </div>
+
+                    <!-- New Entry Form -->
+                    <div class="account-form-section">
+                        <div class="form-section-title"><span class="icon">＋</span> Novo Lançamento</div>
+                        <div class="daily-form">
+                            <div class="form-group">
+                                <label class="form-label" for="daily-day">Dia</label>
+                                <input type="number" id="daily-day" class="input-field" placeholder="1" min="1" max="31" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="daily-invest">Investimento</label>
+                                <div class="input-prefix">
+                                    <input type="number" id="daily-invest" class="input-field input-currency" placeholder="0,00" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="daily-leads">Leads</label>
+                                <input type="number" id="daily-leads" class="input-field" placeholder="0" min="0" step="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="daily-account">Conta</label>
+                                <select id="daily-account" class="select-field"></select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">PIS/COFINS</label>
+                                <div class="input-prefix">
+                                    <input type="text" id="daily-tax" class="input-field input-currency" disabled placeholder="auto">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-primary w-full" id="btn-add-daily">＋ Adicionar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Summary -->
+                    <div class="daily-summary" id="daily-summary">
+                        <div class="daily-summary-card">
+                            <div class="daily-summary-value" id="ds-invest">R$ 0,00</div>
+                            <div class="daily-summary-label">Total Investido</div>
+                        </div>
+                        <div class="daily-summary-card">
+                            <div class="daily-summary-value" id="ds-leads">0</div>
+                            <div class="daily-summary-label">Total Leads</div>
+                        </div>
+                        <div class="daily-summary-card">
+                            <div class="daily-summary-value" id="ds-tax">R$ 0,00</div>
+                            <div class="daily-summary-label">Total Impostos (13,8%)</div>
+                        </div>
+                    </div>
+
+                    <!-- Entries Table -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <div class="icon">📋</div>
+                                Lançamentos do Mês
+                            </div>
+                            <span class="card-badge" id="daily-count" style="background:var(--bg-input); color:var(--text-secondary);">0 registros</span>
+                        </div>
+                        <div class="table-wrapper" style="border:none; margin:0;">
+                            <table class="data-table" id="table-daily">
+                                <thead>
+                                    <tr>
+                                        <th>Dia</th>
+                                        <th>Conta</th>
+                                        <th class="text-right">Investimento</th>
+                                        <th class="text-right">Leads</th>
+                                        <th class="text-right">PIS/COFINS (13,8%)</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody-daily"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="modal-settings">
+        <div class="modal-content">
+            <h3 class="modal-title">⚙️ Configurações</h3>
+            <p class="modal-desc">Altere a senha de acesso administrativo</p>
+
+            <div class="form-group">
+                <label class="form-label" for="settings-current-pw">Senha Atual</label>
+                <input type="password" id="settings-current-pw" class="input-field" placeholder="Senha atual">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="settings-new-pw">Nova Senha</label>
+                <input type="password" id="settings-new-pw" class="input-field" placeholder="Nova senha">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="settings-confirm-pw">Confirmar Nova Senha</label>
+                <input type="password" id="settings-confirm-pw" class="input-field" placeholder="Confirmar nova senha">
+            </div>
+
+            <div id="settings-error" class="login-error" style="margin-top:12px;"></div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="btn-close-settings">Cancelar</button>
+                <button class="btn btn-primary" id="btn-save-password">Salvar Senha</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal-overlay" id="modal-confirm-delete">
+        <div class="modal-content">
+            <h3 class="modal-title">⚠️ Confirmar Exclusão</h3>
+            <p class="modal-desc" id="delete-confirm-msg">Tem certeza que deseja excluir esta conta? Esta ação não pode ser desfeita.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="btn-cancel-delete">Cancelar</button>
+                <button class="btn btn-danger" id="btn-confirm-delete">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Reset Modal -->
+    <div class="modal-overlay" id="modal-confirm-reset">
+        <div class="modal-content">
+            <h3 class="modal-title">🔄 Redefinir Dados</h3>
+            <p class="modal-desc">Isso irá restaurar todos os dados para os valores padrão da planilha original. Todas as alterações serão perdidas.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="btn-cancel-reset">Cancelar</button>
+                <button class="btn btn-danger" id="btn-confirm-reset">Redefinir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Account Modal -->
+    <div class="modal-overlay" id="modal-add-account">
+        <div class="modal-content">
+            <h3 class="modal-title">＋ Nova Conta</h3>
+            <p class="modal-desc">Digite o nome da nova conta</p>
+            <div class="form-group">
+                <label class="form-label" for="new-account-name">Nome da Conta</label>
+                <input type="text" id="new-account-name" class="input-field" placeholder="Ex: MARINGÁ" autofocus>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="btn-cancel-add">Cancelar</button>
+                <button class="btn btn-primary" id="btn-confirm-add">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="global-toast" class="toast"></div>
+
+    <script src="/js/data.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>

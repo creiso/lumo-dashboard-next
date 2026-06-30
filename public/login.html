@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Login Administrativo - LUMO Dashboard">
+    <title>Login - LUMO Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" href="/assets/logo.png" type="image/png">
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            <div class="login-logo">L</div>
+            <h1 class="login-title">LUMO Admin</h1>
+            <p class="login-subtitle">Digite a senha para acessar o painel</p>
+
+            <div id="login-error" class="login-error"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Senha</label>
+                    <input type="password" id="login-password" class="input-field" placeholder="Digite a senha" autofocus required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg w-full" id="btn-login">
+                    🔐 Entrar
+                </button>
+            </form>
+
+            <a href="/index.html" class="login-back">← Voltar ao início</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('login-form');
+        const errorEl = document.getElementById('login-error');
+        const btnLogin = document.getElementById('btn-login');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const password = document.getElementById('login-password').value;
+
+            if (!password) {
+                showError('Digite a senha');
+                return;
+            }
+
+            btnLogin.disabled = true;
+            btnLogin.textContent = '⏳ Verificando...';
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    window.location.href = '/admin.html';
+                } else {
+                    showError(data.error || 'Senha incorreta');
+                }
+            } catch (err) {
+                showError('Erro de conexão. Tente novamente.');
+            }
+
+            btnLogin.disabled = false;
+            btnLogin.textContent = '🔐 Entrar';
+        });
+
+        function showError(msg) {
+            errorEl.textContent = msg;
+            errorEl.classList.add('show');
+            setTimeout(() => errorEl.classList.remove('show'), 4000);
+        }
+    </script>
+</body>
+</html>
